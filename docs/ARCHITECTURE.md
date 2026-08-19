@@ -8,6 +8,9 @@
 - 지금 필요한 범위에서만 구조를 확장합니다.
 - 1.44MB 목표를 해치지 않도록 대형 외부 에셋 의존을 만들지 않습니다.
 - 외부 라이브러리를 기본적으로 도입하지 않고 Windows SDK와 OpenGL 기본 라이브러리만 사용합니다.
+- 전체 흐름은 `Manager`가 소유하고, 실제 기능 단위는 `Component`가 수행하는 구조를 기본 방향으로 둡니다.
+- `Manager`는 생명주기, 실행 순서, 시스템 간 연결을 담당합니다.
+- `Component`는 렌더링, 입력, 오디오, 게임 판정처럼 독립된 기능을 담당합니다.
 
 ## 허용 기술 범위
 - 창과 입력: Win32 API
@@ -34,12 +37,12 @@
 
 ## 대표 코드 책임
 - `Main.cpp`: 프로그램 진입점과 메인 루프
-- `PlatformWindow.*`: Win32 창 생성, 메시지 처리
-- `Renderer.*`: 보드, 노드, 라인 렌더링
-- `Camera.*`: 회전, 줌, 뷰 행렬
-- `DebugSystem.*`: STL 노드 목록, 선택, 패치 판정
-- `PatchDatabase.*`: 버그 설명과 패치 후보 데이터
-- `AudioSystem.*`: 경고음과 성공음 재생
+- `WindowManager.*`: Win32 창 생성, 메시지 루프, 종료 흐름
+- `OpenGlRenderComponent.*`: OpenGL 컨텍스트, 기본 렌더링, 뷰포트
+- `CameraComponent.*`: 회전, 줌, 뷰 행렬
+- `DebugSystemManager.*`: STL 노드 목록, 선택, 패치 판정 흐름
+- `PatchDatabaseComponent.*`: 버그 설명과 패치 후보 데이터
+- `AudioComponent.*`: 경고음과 성공음 재생
 
 ## 변경 원칙
 - 새 파일은 위 책임에 맞는 위치에 둡니다.

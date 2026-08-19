@@ -12,6 +12,7 @@
 - `docs/ARCHITECTURE.md`: 폴더/파일 책임 기준
 - `docs/STYLEGUIDE.md`: C++/OpenGL/에셋/문서 규칙
 - `docs/NAMING.md`: C++ 변수/함수/클래스/구조체 이름 규칙
+- `docs/RENDER_PIPELINE.md`: CPU와 GPU/Shader 렌더링 책임 구분
 - `docs/WORKFLOW.md`: task 진행 절차
 - `docs/TESTING.md`: 검증 방식
 - `docs/PLANS.md`: 진행 상태 표

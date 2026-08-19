@@ -13,10 +13,48 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="0.Engine">
+      <UniqueIdentifier>{1E44BE90-A358-4382-ABBC-67A0F32A7953}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="1.Component">
+      <UniqueIdentifier>{7D4A1B42-91ED-4607-AB9B-1D69A38D430D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="2.Manager">
+      <UniqueIdentifier>{8F0DD949-1C47-4833-8F3F-5E1F9442567D}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Main.cpp">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="0.Engine\Main.cpp">
+      <Filter>0.Engine</Filter>
     </ClCompile>
+    <ClCompile Include="0.Engine\stdafx.cpp">
+      <Filter>0.Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="1.Component\OpenGlRenderComponent.cpp">
+      <Filter>1.Component</Filter>
+    </ClCompile>
+    <ClCompile Include="2.Manager\WindowManager.cpp">
+      <Filter>2.Manager</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="0.Engine\stdafx.h">
+      <Filter>0.Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="1.Component\Component.h">
+      <Filter>1.Component</Filter>
+    </ClInclude>
+    <ClInclude Include="1.Component\OpenGlRenderComponent.h">
+      <Filter>1.Component</Filter>
+    </ClInclude>
+    <ClInclude Include="1.Component\RenderTypes.h">
+      <Filter>1.Component</Filter>
+    </ClInclude>
+    <ClInclude Include="2.Manager\Manager.h">
+      <Filter>2.Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="2.Manager\WindowManager.h">
+      <Filter>2.Manager</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

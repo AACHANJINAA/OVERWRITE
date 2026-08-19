@@ -28,17 +28,20 @@
 
 ## 권장 폴더 책임
 - `docs/`: 기획, 작업 규칙, 진행 현황 문서
-- `src/`: C++ 소스 코드
-- `src/render/`: OpenGL 렌더링과 카메라
-- `src/game/`: STL 노드, 퍼즐 판정, 진행 상태
-- `src/platform/`: Win32 창, 입력, 사운드 같은 플랫폼 코드
+- `OVERWRITE/0.Engine/`: 진입점, 미리 컴파일된 헤더
+- `OVERWRITE/1.Component/`: 렌더링, 입력, 오디오처럼 기능 단위 Component
+- `OVERWRITE/2.Manager/`: 싱글톤 Manager 기본 템플릿과 실행 흐름 Manager 구현
 - `assets/`: 꼭 필요한 소형 리소스만 보관
 - `build/`: 로컬 빌드 산출물
 
 ## 대표 코드 책임
 - `Main.cpp`: 프로그램 진입점과 메인 루프
-- `WindowManager.*`: Win32 창 생성, 메시지 루프, 종료 흐름
-- `OpenGlRenderComponent.*`: OpenGL 컨텍스트, 기본 렌더링, 뷰포트
+- `0.Engine/stdafx.*`: Windows/OpenGL 기본 헤더를 모으는 미리 컴파일된 헤더
+- `2.Manager/Manager.h`: 싱글톤 Manager 기본 템플릿
+- `1.Component/Component.h`: 기능 단위 Component 기본 클래스
+- `1.Component/RenderTypes.h`: 렌더링과 노드 표시용 소형 구조체
+- `2.Manager/WindowManager.*`: Win32 창 생성, 메시지 루프, 종료 흐름
+- `1.Component/OpenGlRenderComponent.*`: OpenGL 컨텍스트, 기본 렌더링, 뷰포트
 - `CameraComponent.*`: 회전, 줌, 뷰 행렬
 - `DebugSystemManager.*`: STL 노드 목록, 선택, 패치 판정 흐름
 - `PatchDatabaseComponent.*`: 버그 설명과 패치 후보 데이터

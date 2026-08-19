@@ -37,6 +37,7 @@
 ## 대표 코드 책임
 - `Main.cpp`: 프로그램 진입점과 메인 루프
 - `0.Engine/stdafx.*`: Windows/OpenGL 기본 헤더를 모으는 미리 컴파일된 헤더
+- `0.Engine/CJ_MathHelper.h`: 반복 사용되는 수학 공식과 안전 계산 함수
 - `2.Manager/Manager.h`: 싱글톤 Manager 기본 템플릿
 - `1.Component/Component.h`: 기능 단위 Component 기본 클래스
 - `1.Component/RenderTypes.h`: 렌더링과 노드 표시용 소형 구조체

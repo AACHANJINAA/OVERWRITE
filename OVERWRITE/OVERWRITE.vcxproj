@@ -171,6 +171,7 @@
     <ClCompile Include="2.Manager\WindowManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="0.Engine\CJ_MathHelper.h" />
     <ClInclude Include="0.Engine\stdafx.h" />
     <ClInclude Include="1.Component\Component.h" />
     <ClInclude Include="1.Component\OpenGlRenderComponent.h" />

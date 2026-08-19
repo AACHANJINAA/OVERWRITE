@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "CJ_MathHelper.h"
 #include "OpenGlRenderComponent.h"
 
 bool OPENGLRENDERCOMPONENT::initialize(HWND _window)
@@ -111,7 +112,7 @@ bool OPENGLRENDERCOMPONENT::setup_pixel_format(HDC _device_context)
 
 void OPENGLRENDERCOMPONENT::update_projection() const
 {
-    const float _aspect = viewport_height > 0 ? static_cast<float>(viewport_width) / static_cast<float>(viewport_height) : 1.0f;
+    const float _aspect = cj_math_helper::safe_aspect(viewport_width, viewport_height);
     const double _near_plane = 1.0;
     const double _far_plane = 64.0;
     const double _top = 0.42;

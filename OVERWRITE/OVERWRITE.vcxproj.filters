@@ -38,6 +38,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="0.Engine\CJ_MathHelper.h">
+      <Filter>0.Engine</Filter>
+    </ClInclude>
     <ClInclude Include="0.Engine\stdafx.h">
       <Filter>0.Engine</Filter>
     </ClInclude>

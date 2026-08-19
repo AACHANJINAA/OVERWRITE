@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="OVERWRITE/OVERWRITE.vcxproj" Id="ceeea2ad-0376-4088-a579-46896938185f" />
+</Solution>

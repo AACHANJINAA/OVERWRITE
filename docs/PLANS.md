@@ -4,7 +4,7 @@
 
 | 단계 | 이름 | 상태 |
 |---|---|---|
-| 01-1 | Windows OpenGL 창 생성 | 대기 |
+| 01-1 | Windows OpenGL 창 생성 | 진행중 |
 | 01-2 | 네온 와이어프레임 콘솔 보드 | 대기 |
 | 01-3 | STL 노드 데이터와 기본 배치 | 대기 |
 | 02-1 | 카메라 회전과 줌 | 대기 |
@@ -23,3 +23,4 @@
 - 2026-08-18: `TPSProject`의 GDD, Task Breakdown, docs 규칙을 참고해 `SYSTEM::OVERWRITE`용 초기 MD 기반을 생성함.
 - 2026-08-19: 1.44MB 최종 빌드 목표를 위해 외부 라이브러리 금지, Win32 API + OpenGL 기본 라이브러리 중심 제작 원칙을 문서에 반영함.
 - 2026-08-19: STL 문제 내용을 `docs/STL_Problem.md` 문제은행으로 분리하고, `TASK_BREAKDOWN.md`가 Problem 번호를 참조하도록 갱신함.
+- 2026-08-19: Task 01-1 구현을 시작하고 Win32 창, OpenGL 컨텍스트, 검은 화면 렌더 루프, ESC/창 닫기 종료 코드를 추가함. 프로젝트 XML 정적 확인은 완료했으며 실제 MSBuild 실행 확인은 대기 중임.

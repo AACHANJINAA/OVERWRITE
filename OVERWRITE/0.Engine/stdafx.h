@@ -7,3 +7,7 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <gl/GL.h>
+#include <cmath>
+#include <fstream>
+#include <sstream>
+#include <string>

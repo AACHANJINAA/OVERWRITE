@@ -38,6 +38,7 @@ bool WINDOWMANAGER::initialize(HINSTANCE _instance, int _show_command)
 
     ShowWindow(window, _show_command);
     UpdateWindow(window);
+    center_cursor();
     return true;
 }
 
@@ -89,28 +90,84 @@ LRESULT WINDOWMANAGER::handle_message(UINT _message, WPARAM _w_param, LPARAM _l_
             DestroyWindow(window);
             return 0;
         }
-        break;
 
-    case WM_LBUTTONDOWN:
-        SetCapture(window);
-        render_component.begin_camera_drag(GET_X_LPARAM(_l_param), GET_Y_LPARAM(_l_param));
-        return 0;
-
-    case WM_MOUSEMOVE:
-        if ((_w_param & MK_LBUTTON) == MK_LBUTTON)
+        if (_w_param == 'W')
         {
-            render_component.update_camera_drag(GET_X_LPARAM(_l_param), GET_Y_LPARAM(_l_param));
+            render_component.set_move_forward(true);
+            return 0;
+        }
+
+        if (_w_param == 'S')
+        {
+            render_component.set_move_backward(true);
+            return 0;
+        }
+
+        if (_w_param == 'A')
+        {
+            render_component.set_move_left(true);
+            return 0;
+        }
+
+        if (_w_param == 'D')
+        {
+            render_component.set_move_right(true);
+            return 0;
+        }
+
+        if (_w_param == 'F')
+        {
+            render_component.interact();
             return 0;
         }
         break;
 
-    case WM_LBUTTONUP:
-        render_component.end_camera_drag();
+    case WM_KEYUP:
+        if (_w_param == 'W')
+        {
+            render_component.set_move_forward(false);
+            return 0;
+        }
+
+        if (_w_param == 'S')
+        {
+            render_component.set_move_backward(false);
+            return 0;
+        }
+
+        if (_w_param == 'A')
+        {
+            render_component.set_move_left(false);
+            return 0;
+        }
+
+        if (_w_param == 'D')
+        {
+            render_component.set_move_right(false);
+            return 0;
+        }
+        break;
+
+    case WM_RBUTTONDOWN:
+        SetCapture(window);
+        render_component.begin_view_drag(GET_X_LPARAM(_l_param), GET_Y_LPARAM(_l_param));
+        return 0;
+
+    case WM_MOUSEMOVE:
+        if ((_w_param & MK_RBUTTON) == MK_RBUTTON)
+        {
+            render_component.update_view_drag(GET_X_LPARAM(_l_param), GET_Y_LPARAM(_l_param));
+            return 0;
+        }
+        break;
+
+    case WM_RBUTTONUP:
+        render_component.end_view_drag();
         ReleaseCapture();
         return 0;
 
-    case WM_MOUSEWHEEL:
-        render_component.zoom_camera(GET_WHEEL_DELTA_WPARAM(_w_param));
+    case WM_LBUTTONDOWN:
+        render_component.puzzle_click(GET_X_LPARAM(_l_param), GET_Y_LPARAM(_l_param));
         return 0;
 
     case WM_CLOSE:
@@ -138,6 +195,26 @@ bool WINDOWMANAGER::register_window_class()
     _window_class.lpszClassName = _window_class_name;
 
     return RegisterClassExW(&_window_class) != 0;
+}
+
+void WINDOWMANAGER::center_cursor() const
+{
+    RECT _client_rect = {};
+    if (window == nullptr || GetClientRect(window, &_client_rect) != TRUE)
+    {
+        return;
+    }
+
+    POINT _center_point =
+    {
+        (_client_rect.right - _client_rect.left) / 2,
+        (_client_rect.bottom - _client_rect.top) / 2
+    };
+
+    if (ClientToScreen(window, &_center_point) == TRUE)
+    {
+        SetCursorPos(_center_point.x, _center_point.y);
+    }
 }
 
 LRESULT CALLBACK WINDOWMANAGER::window_procedure(HWND _window, UINT _message, WPARAM _w_param, LPARAM _l_param)

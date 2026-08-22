@@ -181,6 +181,10 @@
     <ClInclude Include="2.Manager\Manager.h" />
     <ClInclude Include="2.Manager\WindowManager.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="0.Engine\Shader\HelmetGlass.fs" />
+    <None Include="0.Engine\Shader\HelmetGlass.vs" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

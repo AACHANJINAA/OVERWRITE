@@ -17,6 +17,7 @@ private:
     WINDOWMANAGER() = default;
 
     bool register_window_class();
+    void center_cursor() const;
     static LRESULT CALLBACK window_procedure(HWND _window, UINT _message, WPARAM _w_param, LPARAM _l_param);
 
     HINSTANCE instance = nullptr;

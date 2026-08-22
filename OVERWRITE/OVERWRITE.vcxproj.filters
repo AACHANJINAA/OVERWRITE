@@ -22,6 +22,9 @@
     <Filter Include="2.Manager">
       <UniqueIdentifier>{8F0DD949-1C47-4833-8F3F-5E1F9442567D}</UniqueIdentifier>
     </Filter>
+    <Filter Include="0.Engine\Shader">
+      <UniqueIdentifier>{5C3D775D-4F45-4E77-B69D-B5D78118A343}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="0.Engine\Main.cpp">
@@ -65,5 +68,13 @@
     <ClInclude Include="2.Manager\WindowManager.h">
       <Filter>2.Manager</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="0.Engine\Shader\HelmetGlass.fs">
+      <Filter>0.Engine\Shader</Filter>
+    </None>
+    <None Include="0.Engine\Shader\HelmetGlass.vs">
+      <Filter>0.Engine\Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

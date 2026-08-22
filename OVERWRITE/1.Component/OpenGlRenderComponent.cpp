@@ -77,16 +77,35 @@ void OPENGLRENDERCOMPONENT::render_frame()
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    glTranslatef(0.0f, -0.55f, -10.5f);
-    glRotatef(24.0f, 1.0f, 0.0f, 0.0f);
-    glRotatef(-24.0f, 0.0f, 1.0f, 0.0f);
+    camera_component.apply_view();
 
     draw_floor_grid();
     draw_console_board();
     draw_circuit_lines();
     draw_stl_nodes();
+    draw_helmet_overlay();
 
     SwapBuffers(device_context);
+}
+
+void OPENGLRENDERCOMPONENT::begin_camera_drag(int _mouse_x, int _mouse_y)
+{
+    camera_component.begin_drag(_mouse_x, _mouse_y);
+}
+
+void OPENGLRENDERCOMPONENT::update_camera_drag(int _mouse_x, int _mouse_y)
+{
+    camera_component.update_drag(_mouse_x, _mouse_y);
+}
+
+void OPENGLRENDERCOMPONENT::end_camera_drag()
+{
+    camera_component.end_drag();
+}
+
+void OPENGLRENDERCOMPONENT::zoom_camera(int _wheel_delta)
+{
+    camera_component.apply_zoom(_wheel_delta);
 }
 
 bool OPENGLRENDERCOMPONENT::setup_pixel_format(HDC _device_context)
@@ -251,6 +270,106 @@ void OPENGLRENDERCOMPONENT::draw_wire_cube(const VECTOR3& _center, float _size, 
     glVertex3f(_left, _bottom, _front);
     glVertex3f(_left, _top, _front);
     glEnd();
+}
+
+void OPENGLRENDERCOMPONENT::draw_helmet_overlay() const
+{
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    glOrtho(0.0, static_cast<double>(viewport_width), static_cast<double>(viewport_height), 0.0, -1.0, 1.0);
+
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    const float _left = static_cast<float>(viewport_width) * 0.08f;
+    const float _right = static_cast<float>(viewport_width) * 0.92f;
+    const float _top = static_cast<float>(viewport_height) * 0.10f;
+    const float _bottom = static_cast<float>(viewport_height) * 0.92f;
+    const float _center_x = static_cast<float>(viewport_width) * 0.5f;
+    const float _center_y = static_cast<float>(viewport_height) * 0.5f;
+
+    glBegin(GL_QUADS);
+    glColor4f(0.0f, 0.12f, 0.16f, 0.24f);
+    glVertex2f(0.0f, 0.0f);
+    glVertex2f(_left, 0.0f);
+    glVertex2f(_left * 0.72f, static_cast<float>(viewport_height));
+    glVertex2f(0.0f, static_cast<float>(viewport_height));
+
+    glVertex2f(_right, 0.0f);
+    glVertex2f(static_cast<float>(viewport_width), 0.0f);
+    glVertex2f(static_cast<float>(viewport_width), static_cast<float>(viewport_height));
+    glVertex2f(_right * 1.03f, static_cast<float>(viewport_height));
+
+    glColor4f(0.0f, 0.08f, 0.10f, 0.16f);
+    glVertex2f(0.0f, 0.0f);
+    glVertex2f(static_cast<float>(viewport_width), 0.0f);
+    glVertex2f(static_cast<float>(viewport_width), _top * 0.55f);
+    glVertex2f(0.0f, _top * 0.75f);
+
+    glVertex2f(0.0f, _bottom);
+    glVertex2f(static_cast<float>(viewport_width), _bottom * 0.98f);
+    glVertex2f(static_cast<float>(viewport_width), static_cast<float>(viewport_height));
+    glVertex2f(0.0f, static_cast<float>(viewport_height));
+    glEnd();
+
+    glLineWidth(1.0f);
+    glColor4f(0.76f, 0.96f, 1.0f, 0.20f);
+    glBegin(GL_LINE_STRIP);
+    glVertex2f(_left * 0.95f, _center_y * 0.76f);
+    glVertex2f(_left * 1.42f, _top * 1.34f);
+    glVertex2f(_center_x * 0.82f, _top * 0.82f);
+    glVertex2f(_center_x * 1.18f, _top * 0.82f);
+    glVertex2f(_right * 0.88f, _top * 1.34f);
+    glVertex2f(_right * 1.01f, _center_y * 0.76f);
+    glEnd();
+
+    glColor4f(0.0f, 0.48f, 0.58f, 0.16f);
+    glBegin(GL_LINE_STRIP);
+    glVertex2f(_left * 0.92f, _center_y * 0.86f);
+    glVertex2f(_left * 0.88f, _bottom * 0.76f);
+    glVertex2f(_left * 1.10f, _bottom * 0.96f);
+    glVertex2f(_center_x, _bottom * 0.99f);
+    glVertex2f(_right * 0.95f, _bottom * 0.96f);
+    glVertex2f(_right * 1.03f, _bottom * 0.76f);
+    glVertex2f(_right * 1.02f, _center_y * 0.86f);
+    glEnd();
+
+    glLineWidth(1.4f);
+    glColor4f(0.95f, 1.0f, 1.0f, 0.30f);
+    glBegin(GL_LINES);
+    glVertex2f(_left * 1.38f, _top * 1.15f);
+    glVertex2f(_left * 2.45f, _top * 0.82f);
+    glVertex2f(_left * 1.22f, _top * 1.55f);
+    glVertex2f(_left * 1.86f, _top * 1.36f);
+    glEnd();
+
+    glLineWidth(0.75f);
+    glColor4f(0.68f, 0.94f, 1.0f, 0.10f);
+    glBegin(GL_LINES);
+    glVertex2f(_left * 1.50f, _center_y * 0.46f);
+    glVertex2f(_left * 2.80f, _center_y * 0.40f);
+    glVertex2f(_right * 0.78f, _center_y * 0.44f);
+    glVertex2f(_right * 0.95f, _center_y * 0.49f);
+    glVertex2f(_left * 1.45f, _bottom * 0.84f);
+    glVertex2f(_left * 2.75f, _bottom * 0.80f);
+    glVertex2f(_right * 0.80f, _bottom * 0.80f);
+    glVertex2f(_right * 0.96f, _bottom * 0.84f);
+    glEnd();
+
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
+
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
 }
 
 const STLNODE* OPENGLRENDERCOMPONENT::get_stl_nodes() const

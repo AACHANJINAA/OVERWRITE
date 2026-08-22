@@ -91,6 +91,28 @@ LRESULT WINDOWMANAGER::handle_message(UINT _message, WPARAM _w_param, LPARAM _l_
         }
         break;
 
+    case WM_LBUTTONDOWN:
+        SetCapture(window);
+        render_component.begin_camera_drag(GET_X_LPARAM(_l_param), GET_Y_LPARAM(_l_param));
+        return 0;
+
+    case WM_MOUSEMOVE:
+        if ((_w_param & MK_LBUTTON) == MK_LBUTTON)
+        {
+            render_component.update_camera_drag(GET_X_LPARAM(_l_param), GET_Y_LPARAM(_l_param));
+            return 0;
+        }
+        break;
+
+    case WM_LBUTTONUP:
+        render_component.end_camera_drag();
+        ReleaseCapture();
+        return 0;
+
+    case WM_MOUSEWHEEL:
+        render_component.zoom_camera(GET_WHEEL_DELTA_WPARAM(_w_param));
+        return 0;
+
     case WM_CLOSE:
         DestroyWindow(window);
         return 0;

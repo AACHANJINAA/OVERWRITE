@@ -30,6 +30,9 @@
     <ClCompile Include="0.Engine\stdafx.cpp">
       <Filter>0.Engine</Filter>
     </ClCompile>
+    <ClCompile Include="1.Component\CameraComponent.cpp">
+      <Filter>1.Component</Filter>
+    </ClCompile>
     <ClCompile Include="1.Component\OpenGlRenderComponent.cpp">
       <Filter>1.Component</Filter>
     </ClCompile>
@@ -43,6 +46,9 @@
     </ClInclude>
     <ClInclude Include="0.Engine\stdafx.h">
       <Filter>0.Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="1.Component\CameraComponent.h">
+      <Filter>1.Component</Filter>
     </ClInclude>
     <ClInclude Include="1.Component\Component.h">
       <Filter>1.Component</Filter>

@@ -5,4 +5,5 @@
 #endif
 
 #include <windows.h>
+#include <windowsx.h>
 #include <gl/GL.h>

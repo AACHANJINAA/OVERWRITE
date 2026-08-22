@@ -43,7 +43,7 @@
 - `1.Component/RenderTypes.h`: 렌더링과 노드 표시용 소형 구조체
 - `2.Manager/WindowManager.*`: Win32 창 생성, 메시지 루프, 종료 흐름
 - `1.Component/OpenGlRenderComponent.*`: OpenGL 컨텍스트, 기본 렌더링, 뷰포트
-- `CameraComponent.*`: 회전, 줌, 뷰 행렬
+- `1.Component/CameraComponent.*`: 회전, 줌, 뷰 적용
 - `DebugSystemManager.*`: STL 노드 목록, 선택, 패치 판정 흐름
 - `PatchDatabaseComponent.*`: 버그 설명과 패치 후보 데이터
 - `AudioComponent.*`: 경고음과 성공음 재생

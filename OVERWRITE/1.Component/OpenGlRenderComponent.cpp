@@ -112,6 +112,51 @@ std::string read_text_file(const char* _file_path)
     _stream << _file.rdbuf();
     return _stream.str();
 }
+
+GLuint build_shader_program(const char* _vertex_path, const char* _fragment_path)
+{
+    const std::string _vertex_shader_source = read_text_file(_vertex_path);
+    const std::string _fragment_shader_source = read_text_file(_fragment_path);
+    if (_vertex_shader_source.empty() || _fragment_shader_source.empty())
+    {
+        return 0;
+    }
+
+    const GLuint _vertex_shader = compile_shader(_gl_vertex_shader, _vertex_shader_source.c_str());
+    const GLuint _fragment_shader = compile_shader(_gl_fragment_shader, _fragment_shader_source.c_str());
+    if (_vertex_shader == 0 || _fragment_shader == 0)
+    {
+        if (_vertex_shader != 0)
+        {
+            _gl_delete_shader(_vertex_shader);
+        }
+
+        if (_fragment_shader != 0)
+        {
+            _gl_delete_shader(_fragment_shader);
+        }
+
+        return 0;
+    }
+
+    const GLuint _program = _gl_create_program();
+    _gl_attach_shader(_program, _vertex_shader);
+    _gl_attach_shader(_program, _fragment_shader);
+    _gl_link_program(_program);
+
+    _gl_delete_shader(_vertex_shader);
+    _gl_delete_shader(_fragment_shader);
+
+    GLint _is_linked = 0;
+    _gl_get_program_iv(_program, _gl_link_status, &_is_linked);
+    if (_is_linked == 0)
+    {
+        _gl_delete_program(_program);
+        return 0;
+    }
+
+    return _program;
+}
 }
 
 bool OPENGLRENDERCOMPONENT::initialize(HWND _window)
@@ -196,11 +241,14 @@ void OPENGLRENDERCOMPONENT::render_frame()
     glLoadIdentity();
     camera_component.apply_view();
 
+    use_scene_shader(interior_shader_program);
     draw_spaceship_interior();
-    draw_window_section();
     draw_repair_console();
     draw_wall_panels();
     draw_stl_nodes();
+    use_scene_shader(0);
+
+    draw_window_section();
     draw_helmet_overlay();
 
     SwapBuffers(device_context);
@@ -279,48 +327,10 @@ bool OPENGLRENDERCOMPONENT::initialize_shader_program()
         return false;
     }
 
-    const std::string _vertex_shader_source = read_text_file("0.Engine/Shader/HelmetGlass.vs");
-    const std::string _fragment_shader_source = read_text_file("0.Engine/Shader/HelmetGlass.fs");
-    if (_vertex_shader_source.empty() || _fragment_shader_source.empty())
-    {
-        return false;
-    }
-
-    const GLuint _vertex_shader = compile_shader(_gl_vertex_shader, _vertex_shader_source.c_str());
-    const GLuint _fragment_shader = compile_shader(_gl_fragment_shader, _fragment_shader_source.c_str());
-    if (_vertex_shader == 0 || _fragment_shader == 0)
-    {
-        if (_vertex_shader != 0)
-        {
-            _gl_delete_shader(_vertex_shader);
-        }
-
-        if (_fragment_shader != 0)
-        {
-            _gl_delete_shader(_fragment_shader);
-        }
-
-        return false;
-    }
-
-    const GLuint _program = _gl_create_program();
-    _gl_attach_shader(_program, _vertex_shader);
-    _gl_attach_shader(_program, _fragment_shader);
-    _gl_link_program(_program);
-
-    _gl_delete_shader(_vertex_shader);
-    _gl_delete_shader(_fragment_shader);
-
-    GLint _is_linked = 0;
-    _gl_get_program_iv(_program, _gl_link_status, &_is_linked);
-    if (_is_linked == 0)
-    {
-        _gl_delete_program(_program);
-        return false;
-    }
-
-    glass_shader_program = _program;
-    return true;
+    glass_shader_program = build_shader_program("0.Engine/Shader/HelmetGlass.vs", "0.Engine/Shader/HelmetGlass.fs");
+    interior_shader_program = build_shader_program("0.Engine/Shader/InteriorGlow.vs", "0.Engine/Shader/InteriorGlow.fs");
+    earth_shader_program = build_shader_program("0.Engine/Shader/EarthView.vs", "0.Engine/Shader/EarthView.fs");
+    return glass_shader_program != 0 || interior_shader_program != 0 || earth_shader_program != 0;
 }
 
 void OPENGLRENDERCOMPONENT::shutdown_shader_program()
@@ -329,6 +339,18 @@ void OPENGLRENDERCOMPONENT::shutdown_shader_program()
     {
         _gl_delete_program(glass_shader_program);
         glass_shader_program = 0;
+    }
+
+    if (interior_shader_program != 0 && _gl_delete_program != nullptr)
+    {
+        _gl_delete_program(interior_shader_program);
+        interior_shader_program = 0;
+    }
+
+    if (earth_shader_program != 0 && _gl_delete_program != nullptr)
+    {
+        _gl_delete_program(earth_shader_program);
+        earth_shader_program = 0;
     }
 }
 
@@ -362,9 +384,9 @@ void OPENGLRENDERCOMPONENT::draw_line(const VECTOR3& _start, const VECTOR3& _end
 
 void OPENGLRENDERCOMPONENT::draw_spaceship_interior() const
 {
-    const COLORRGB _floor_color = { 0.0f, 0.22f, 0.28f };
-    const COLORRGB _rib_color = { 0.0f, 0.48f, 0.58f };
-    const COLORRGB _support_color = { 0.0f, 0.62f, 0.72f };
+    const COLORRGB _floor_color = { 0.46f, 0.50f, 0.52f };
+    const COLORRGB _rib_color = { 0.72f, 0.76f, 0.78f };
+    const COLORRGB _support_color = { 0.88f, 0.92f, 0.94f };
     const float _left = -3.8f;
     const float _right = 3.8f;
     const float _floor = 0.0f;
@@ -372,25 +394,18 @@ void OPENGLRENDERCOMPONENT::draw_spaceship_interior() const
     const float _back = 5.8f;
     const float _front = -6.2f;
 
+    draw_cyberpunk_surfaces();
+
     glLineWidth(1.0f);
     for (int _index = 0; _index <= 12; ++_index)
     {
         const float _z = _back - static_cast<float>(_index);
-        draw_line({ _left, _floor, _z }, { _right, _floor, _z }, _floor_color);
-        draw_line({ _left, _ceiling, _z }, { _right, _ceiling, _z }, _floor_color);
         draw_line({ _left, _floor, _z }, { -2.75f, 0.92f, _z }, _rib_color);
         draw_line({ -2.75f, 0.92f, _z }, { -2.45f, 2.35f, _z }, _rib_color);
         draw_line({ -2.45f, 2.35f, _z }, { -1.55f, _ceiling, _z }, _rib_color);
         draw_line({ _right, _floor, _z }, { 2.75f, 0.92f, _z }, _rib_color);
         draw_line({ 2.75f, 0.92f, _z }, { 2.45f, 2.35f, _z }, _rib_color);
         draw_line({ 2.45f, 2.35f, _z }, { 1.55f, _ceiling, _z }, _rib_color);
-    }
-
-    for (int _index = -3; _index <= 3; ++_index)
-    {
-        const float _x = static_cast<float>(_index);
-        draw_line({ _x, _floor, _back }, { _x, _floor, _front }, _floor_color);
-        draw_line({ _x, _ceiling, _back }, { _x, _ceiling, _front }, _floor_color);
     }
 
     glLineWidth(2.0f);
@@ -402,9 +417,92 @@ void OPENGLRENDERCOMPONENT::draw_spaceship_interior() const
     draw_line({ 2.75f, 0.92f, _back }, { 2.75f, 0.92f, _front }, _support_color);
     draw_line({ -2.45f, 2.35f, _back }, { -2.45f, 2.35f, _front }, _support_color);
     draw_line({ 2.45f, 2.35f, _back }, { 2.45f, 2.35f, _front }, _support_color);
+    draw_line({ -1.18f, _floor + 0.02f, _back }, { -0.72f, _floor + 0.02f, _front }, _floor_color);
+    draw_line({ 1.18f, _floor + 0.02f, _back }, { 0.72f, _floor + 0.02f, _front }, _floor_color);
 
     draw_floor_details();
     draw_ceiling_details();
+}
+
+void OPENGLRENDERCOMPONENT::draw_cyberpunk_surfaces() const
+{
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDepthMask(GL_FALSE);
+
+    glBegin(GL_QUADS);
+    glColor4f(0.50f, 0.54f, 0.56f, 0.34f);
+    glVertex3f(-3.75f, 0.0f, 5.8f);
+    glVertex3f(3.75f, 0.0f, 5.8f);
+    glVertex3f(3.75f, 0.0f, -6.2f);
+    glVertex3f(-3.75f, 0.0f, -6.2f);
+
+    glColor4f(0.62f, 0.66f, 0.68f, 0.20f);
+    glVertex3f(-3.75f, 0.0f, 5.8f);
+    glVertex3f(-2.72f, 0.92f, 5.8f);
+    glVertex3f(-2.72f, 0.92f, -6.2f);
+    glVertex3f(-3.75f, 0.0f, -6.2f);
+
+    glVertex3f(3.75f, 0.0f, 5.8f);
+    glVertex3f(2.72f, 0.92f, 5.8f);
+    glVertex3f(2.72f, 0.92f, -6.2f);
+    glVertex3f(3.75f, 0.0f, -6.2f);
+
+    glColor4f(0.42f, 0.46f, 0.48f, 0.28f);
+    glVertex3f(-2.72f, 0.92f, 5.8f);
+    glVertex3f(-2.42f, 2.35f, 5.8f);
+    glVertex3f(-2.42f, 2.35f, -6.2f);
+    glVertex3f(-2.72f, 0.92f, -6.2f);
+
+    glVertex3f(2.72f, 0.92f, 5.8f);
+    glVertex3f(2.42f, 2.35f, 5.8f);
+    glVertex3f(2.42f, 2.35f, -6.2f);
+    glVertex3f(2.72f, 0.92f, -6.2f);
+
+    glColor4f(0.58f, 0.62f, 0.64f, 0.22f);
+    glVertex3f(-1.55f, 3.0f, 5.8f);
+    glVertex3f(1.55f, 3.0f, 5.8f);
+    glVertex3f(1.55f, 3.0f, -6.2f);
+    glVertex3f(-1.55f, 3.0f, -6.2f);
+
+    glColor4f(0.0f, 0.82f, 1.0f, 0.18f);
+    glVertex3f(-0.95f, 2.985f, 5.8f);
+    glVertex3f(-0.72f, 2.985f, 5.8f);
+    glVertex3f(-0.72f, 2.985f, -6.2f);
+    glVertex3f(-0.95f, 2.985f, -6.2f);
+
+    glColor4f(1.0f, 0.04f, 0.48f, 0.16f);
+    glVertex3f(0.72f, 2.985f, 5.8f);
+    glVertex3f(0.95f, 2.985f, 5.8f);
+    glVertex3f(0.95f, 2.985f, -6.2f);
+    glVertex3f(0.72f, 2.985f, -6.2f);
+
+    glColor4f(0.0f, 0.90f, 1.0f, 0.22f);
+    glVertex3f(-0.18f, 0.022f, 5.8f);
+    glVertex3f(0.18f, 0.022f, 5.8f);
+    glVertex3f(0.18f, 0.022f, -6.2f);
+    glVertex3f(-0.18f, 0.022f, -6.2f);
+
+    glColor4f(1.0f, 0.05f, 0.55f, 0.20f);
+    glVertex3f(-2.35f, 0.026f, 5.8f);
+    glVertex3f(-2.18f, 0.026f, 5.8f);
+    glVertex3f(-1.00f, 0.026f, -6.2f);
+    glVertex3f(-1.17f, 0.026f, -6.2f);
+
+    glColor4f(0.50f, 0.08f, 1.0f, 0.20f);
+    glVertex3f(2.35f, 0.026f, 5.8f);
+    glVertex3f(2.18f, 0.026f, 5.8f);
+    glVertex3f(1.00f, 0.026f, -6.2f);
+    glVertex3f(1.17f, 0.026f, -6.2f);
+    glEnd();
+
+    for (int _index = 0; _index < 6; ++_index)
+    {
+        draw_neon_panel_pair(4.85f - static_cast<float>(_index) * 1.85f);
+    }
+
+    glDepthMask(GL_TRUE);
+    glDisable(GL_BLEND);
 }
 
 void OPENGLRENDERCOMPONENT::draw_window_section() const
@@ -479,8 +577,37 @@ void OPENGLRENDERCOMPONENT::draw_window_section() const
 
 void OPENGLRENDERCOMPONENT::draw_repair_console() const
 {
-    const COLORRGB _console_color = { 0.0f, 0.78f, 0.92f };
-    const COLORRGB _panel_color = { 0.0f, 0.32f, 0.52f };
+    const COLORRGB _console_color = { 0.82f, 0.86f, 0.88f };
+    const COLORRGB _panel_color = { 0.44f, 0.48f, 0.50f };
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBegin(GL_QUADS);
+    glColor4f(0.0f, 0.58f, 0.72f, 0.24f);
+    glVertex3f(-1.58f, 0.80f, -2.30f);
+    glVertex3f(1.58f, 0.80f, -2.30f);
+    glVertex3f(1.92f, 0.46f, -1.34f);
+    glVertex3f(-1.92f, 0.46f, -1.34f);
+
+    glColor4f(1.0f, 0.05f, 0.45f, 0.22f);
+    glVertex3f(-1.34f, 0.68f, -1.90f);
+    glVertex3f(-0.28f, 0.68f, -1.90f);
+    glVertex3f(-0.40f, 0.52f, -1.48f);
+    glVertex3f(-1.48f, 0.52f, -1.48f);
+
+    glColor4f(0.45f, 0.08f, 1.0f, 0.22f);
+    glVertex3f(0.28f, 0.68f, -1.90f);
+    glVertex3f(1.34f, 0.68f, -1.90f);
+    glVertex3f(1.48f, 0.52f, -1.48f);
+    glVertex3f(0.40f, 0.52f, -1.48f);
+
+    glColor4f(0.0f, 1.0f, 0.92f, 0.20f);
+    glVertex3f(-0.22f, 0.66f, -1.78f);
+    glVertex3f(0.22f, 0.66f, -1.78f);
+    glVertex3f(0.22f, 0.54f, -1.48f);
+    glVertex3f(-0.22f, 0.54f, -1.48f);
+    glEnd();
+    glDisable(GL_BLEND);
 
     glLineWidth(2.0f);
     glBegin(GL_LINE_LOOP);
@@ -513,50 +640,66 @@ void OPENGLRENDERCOMPONENT::draw_wall_panels() const
     }
 }
 
+void OPENGLRENDERCOMPONENT::draw_neon_panel_pair(float _z) const
+{
+    const float _back_z = _z - 1.18f;
+
+    glBegin(GL_QUADS);
+    glColor4f(0.0f, 0.90f, 1.0f, 0.16f);
+    glVertex3f(-3.64f, 1.02f, _z - 0.22f);
+    glVertex3f(-3.64f, 1.68f, _back_z);
+    glVertex3f(-3.20f, 1.76f, _back_z);
+    glVertex3f(-3.20f, 0.96f, _z - 0.32f);
+
+    glVertex3f(3.64f, 1.02f, _z - 0.22f);
+    glVertex3f(3.64f, 1.68f, _back_z);
+    glVertex3f(3.20f, 1.76f, _back_z);
+    glVertex3f(3.20f, 0.96f, _z - 0.32f);
+
+    glColor4f(1.0f, 0.05f, 0.56f, 0.18f);
+    glVertex3f(-3.58f, 0.52f, _z - 0.06f);
+    glVertex3f(-3.18f, 0.78f, _z - 0.18f);
+    glVertex3f(-3.08f, 0.66f, _z - 0.58f);
+    glVertex3f(-3.48f, 0.42f, _z - 0.46f);
+
+    glColor4f(0.58f, 0.10f, 1.0f, 0.18f);
+    glVertex3f(3.58f, 0.52f, _z - 0.06f);
+    glVertex3f(3.18f, 0.78f, _z - 0.18f);
+    glVertex3f(3.08f, 0.66f, _z - 0.58f);
+    glVertex3f(3.48f, 0.42f, _z - 0.46f);
+    glEnd();
+}
+
 void OPENGLRENDERCOMPONENT::draw_floor_details() const
 {
-    const COLORRGB _grate_color = { 0.0f, 0.36f, 0.44f };
-    const COLORRGB _panel_color = { 0.0f, 0.50f, 0.58f };
+    const COLORRGB _trim_color = { 0.68f, 0.72f, 0.74f };
+    const COLORRGB _light_color = { 0.0f, 0.82f, 0.96f };
 
-    glLineWidth(1.0f);
-    for (int _index = 0; _index < 13; ++_index)
-    {
-        const float _z = 5.55f - static_cast<float>(_index) * 0.85f;
-        draw_line({ -0.62f, 0.012f, _z }, { 0.62f, 0.012f, _z }, _grate_color);
-        draw_line({ -2.65f, 0.014f, _z }, { -1.0f, 0.014f, _z - 0.48f }, _panel_color);
-        draw_line({ 2.65f, 0.014f, _z }, { 1.0f, 0.014f, _z - 0.48f }, _panel_color);
-    }
-
-    draw_line({ -0.72f, 0.018f, 5.8f }, { -0.72f, 0.018f, -6.2f }, _grate_color);
-    draw_line({ 0.72f, 0.018f, 5.8f }, { 0.72f, 0.018f, -6.2f }, _grate_color);
-    draw_line({ -2.85f, 0.018f, 5.8f }, { -0.95f, 0.018f, -6.2f }, _panel_color);
-    draw_line({ 2.85f, 0.018f, 5.8f }, { 0.95f, 0.018f, -6.2f }, _panel_color);
+    glLineWidth(1.2f);
+    draw_line({ -2.85f, 0.018f, 5.8f }, { -1.18f, 0.018f, -6.2f }, _trim_color);
+    draw_line({ 2.85f, 0.018f, 5.8f }, { 1.18f, 0.018f, -6.2f }, _trim_color);
+    draw_line({ -0.28f, 0.024f, 5.8f }, { -0.28f, 0.024f, -6.2f }, _light_color);
+    draw_line({ 0.28f, 0.024f, 5.8f }, { 0.28f, 0.024f, -6.2f }, _light_color);
 }
 
 void OPENGLRENDERCOMPONENT::draw_ceiling_details() const
 {
-    const COLORRGB _panel_color = { 0.0f, 0.30f, 0.38f };
+    const COLORRGB _trim_color = { 0.62f, 0.66f, 0.68f };
     const COLORRGB _light_color = { 0.46f, 0.96f, 1.0f };
 
     glLineWidth(1.0f);
-    for (int _index = 0; _index < 8; ++_index)
-    {
-        const float _z = 5.35f - static_cast<float>(_index) * 1.45f;
-        draw_line({ -1.15f, 2.985f, _z }, { 1.15f, 2.985f, _z }, _panel_color);
-        draw_line({ -1.15f, 2.985f, _z - 0.55f }, { 1.15f, 2.985f, _z - 0.55f }, _panel_color);
-        draw_line({ -1.15f, 2.985f, _z }, { -1.15f, 2.985f, _z - 0.55f }, _panel_color);
-        draw_line({ 1.15f, 2.985f, _z }, { 1.15f, 2.985f, _z - 0.55f }, _panel_color);
+    draw_line({ -1.15f, 2.985f, 5.8f }, { -1.15f, 2.985f, -6.2f }, _trim_color);
+    draw_line({ 1.15f, 2.985f, 5.8f }, { 1.15f, 2.985f, -6.2f }, _trim_color);
 
-        glLineWidth(2.0f);
-        draw_line({ -0.72f, 2.975f, _z - 0.24f }, { 0.72f, 2.975f, _z - 0.24f }, _light_color);
-        glLineWidth(1.0f);
-    }
+    glLineWidth(2.0f);
+    draw_line({ -0.56f, 2.975f, 5.8f }, { -0.56f, 2.975f, -6.2f }, _light_color);
+    draw_line({ 0.56f, 2.975f, 5.8f }, { 0.56f, 2.975f, -6.2f }, _light_color);
 }
 
 void OPENGLRENDERCOMPONENT::draw_wall_module(float _z) const
 {
-    const COLORRGB _panel_color = { 0.0f, 0.30f, 0.38f };
-    const COLORRGB _trim_color = { 0.0f, 0.58f, 0.68f };
+    const COLORRGB _panel_color = { 0.48f, 0.52f, 0.54f };
+    const COLORRGB _trim_color = { 0.76f, 0.80f, 0.82f };
     const COLORRGB _device_color = { 0.0f, 0.78f, 0.88f };
     const float _back_z = _z - 1.22f;
 
@@ -595,7 +738,45 @@ void OPENGLRENDERCOMPONENT::draw_earth_preview() const
     const float _z = -6.32f;
     const float _center_x = 0.0f;
     const float _center_y = 1.72f;
-    const float _radius = 0.42f;
+    const float _radius = 0.76f;
+
+    if (earth_shader_program != 0 && _gl_use_program != nullptr)
+    {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        _gl_use_program(earth_shader_program);
+
+        const GLint _center_location = _gl_get_uniform_location(earth_shader_program, "u_center");
+        const GLint _radius_location = _gl_get_uniform_location(earth_shader_program, "u_radius");
+        const GLint _time_location = _gl_get_uniform_location(earth_shader_program, "u_time");
+
+        if (_center_location >= 0)
+        {
+            _gl_uniform_2f(_center_location, _center_x, _center_y);
+        }
+
+        if (_radius_location >= 0)
+        {
+            _gl_uniform_1f(_radius_location, _radius);
+        }
+
+        if (_time_location >= 0)
+        {
+            _gl_uniform_1f(_time_location, static_cast<float>(GetTickCount64()) * 0.001f);
+        }
+
+        const float _quad_radius = _radius * 1.2f;
+        glBegin(GL_QUADS);
+        glVertex3f(_center_x - _quad_radius, _center_y - _quad_radius, _z);
+        glVertex3f(_center_x + _quad_radius, _center_y - _quad_radius, _z);
+        glVertex3f(_center_x + _quad_radius, _center_y + _quad_radius, _z);
+        glVertex3f(_center_x - _quad_radius, _center_y + _quad_radius, _z);
+        glEnd();
+
+        _gl_use_program(0);
+        glDisable(GL_BLEND);
+        return;
+    }
 
     glLineWidth(1.4f);
     set_color(_earth_color);
@@ -616,6 +797,27 @@ void OPENGLRENDERCOMPONENT::draw_earth_preview() const
     glVertex3f(0.05f, 1.63f, _z);
     glVertex3f(0.24f, 1.52f, _z);
     glEnd();
+}
+
+void OPENGLRENDERCOMPONENT::use_scene_shader(GLuint _shader_program) const
+{
+    if (_gl_use_program == nullptr)
+    {
+        return;
+    }
+
+    _gl_use_program(_shader_program);
+
+    if (_shader_program == 0)
+    {
+        return;
+    }
+
+    const GLint _time_location = _gl_get_uniform_location(_shader_program, "u_time");
+    if (_time_location >= 0)
+    {
+        _gl_uniform_1f(_time_location, static_cast<float>(GetTickCount64()) * 0.001f);
+    }
 }
 
 void OPENGLRENDERCOMPONENT::draw_stl_nodes() const

@@ -11,12 +11,12 @@ void main()
     float radius = length(centered);
     float edge = smoothstep(0.42, 0.82, radius);
     float rim = smoothstep(0.50, 0.86, radius) * 0.22;
-    float top_shadow = smoothstep(0.24, 0.0, v_uv.y) * 0.16;
+    float top_shadow = (1.0 - smoothstep(0.0, 0.24, v_uv.y)) * 0.16;
     float bottom_shadow = smoothstep(0.72, 1.0, v_uv.y) * 0.18;
-    float left_shadow = smoothstep(0.18, 0.0, v_uv.x) * 0.18;
+    float left_shadow = (1.0 - smoothstep(0.0, 0.18, v_uv.x)) * 0.18;
     float right_shadow = smoothstep(0.82, 1.0, v_uv.x) * 0.18;
-    float diag_a = smoothstep(0.018, 0.0, abs((v_uv.y - 0.22) - (v_uv.x - 0.14) * 0.24));
-    float diag_b = smoothstep(0.014, 0.0, abs((v_uv.y - 0.30) - (v_uv.x - 0.10) * 0.21));
+    float diag_a = 1.0 - smoothstep(0.0, 0.018, abs((v_uv.y - 0.22) - (v_uv.x - 0.14) * 0.24));
+    float diag_b = 1.0 - smoothstep(0.0, 0.014, abs((v_uv.y - 0.30) - (v_uv.x - 0.10) * 0.21));
     float scan = sin((v_uv.y + u_time * 0.04) * 160.0) * 0.5 + 0.5;
     vec3 glass_color = vec3(0.08, 0.34, 0.40);
     vec3 shine_color = vec3(0.82, 1.0, 1.0);

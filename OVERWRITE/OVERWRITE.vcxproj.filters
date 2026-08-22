@@ -70,10 +70,22 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <None Include="0.Engine\Shader\EarthView.fs">
+      <Filter>0.Engine\Shader</Filter>
+    </None>
+    <None Include="0.Engine\Shader\EarthView.vs">
+      <Filter>0.Engine\Shader</Filter>
+    </None>
     <None Include="0.Engine\Shader\HelmetGlass.fs">
       <Filter>0.Engine\Shader</Filter>
     </None>
     <None Include="0.Engine\Shader\HelmetGlass.vs">
+      <Filter>0.Engine\Shader</Filter>
+    </None>
+    <None Include="0.Engine\Shader\InteriorGlow.fs">
+      <Filter>0.Engine\Shader</Filter>
+    </None>
+    <None Include="0.Engine\Shader\InteriorGlow.vs">
       <Filter>0.Engine\Shader</Filter>
     </None>
   </ItemGroup>
